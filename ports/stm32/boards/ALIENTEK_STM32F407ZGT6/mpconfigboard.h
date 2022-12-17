@@ -126,17 +126,17 @@
 
 // USRSW is pulled low. Pressing the button makes the input go high.
 #define MICROPY_HW_USRSW_PIN        (pin_A0)
-#define MICROPY_HW_USRSW_PULL       (GPIO_PULLDOWN)//  GPIO_PULLUP 上拉 GPIO_NOPULL 悬空 GPIO_PULLDOWN 下拉
-#define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_RISING)//GPIO_MODE_IT_FALLING 下降沿触发中断 GPIO_MODE_IT_RISING 上升沿触发中断
-#define MICROPY_HW_USRSW_PRESSED    (1)//按下时的电平
+#define MICROPY_HW_USRSW_PULL       (GPIO_PULLDOWN)
+#define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_RISING)
+#define MICROPY_HW_USRSW_PRESSED    (1)
 
 // KEYS is pulled high. Pressing the button makes the input go low.
 #define MICROPY_HW_KEY1       (pin_E4)
 #define MICROPY_HW_KEY2       (pin_E3)
 #define MICROPY_HW_KEY3       (pin_E2)
-#define MICROPY_HW_KEYS_PULL       (GPIO_PULLUP)//  GPIO_PULLUP 上拉 GPIO_NOPULL 悬空 GPIO_PULLDOWN 下拉
-#define MICROPY_HW_KEYS_EXTI_MODE  (GPIO_MODE_IT_FALLING)//GPIO_MODE_IT_FALLING 下降沿触发中断 GPIO_MODE_IT_RISING 上升沿触发中断
-#define MICROPY_HW_KEYS_PRESSED    (0)//按下时的电平
+#define MICROPY_HW_KEYS_PULL       (GPIO_PULLUP)
+#define MICROPY_HW_KEYS_EXTI_MODE  (GPIO_MODE_IT_FALLING)
+#define MICROPY_HW_KEYS_PRESSED    (0)
 
 // LEDs
 #define MICROPY_HW_LED1         (pin_F9) // Red
