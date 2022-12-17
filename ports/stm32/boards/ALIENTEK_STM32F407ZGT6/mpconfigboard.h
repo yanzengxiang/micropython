@@ -148,7 +148,7 @@
 #if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
 // The board does not have onboard SPI flash. You need to add an external one.
-//#define MICROPY_HW_SPIFLASH_SIZE_BITS (4 * 1024 * 1024) // W25X40 - 4 Mbit (512 KByte)
+// #define MICROPY_HW_SPIFLASH_SIZE_BITS (4 * 1024 * 1024) // W25X40 - 4 Mbit (512 KByte)
 // #define MICROPY_HW_SPIFLASH_SIZE_BITS (32 * 1024 * 1024) // W25Q32 - 32 Mbit (4 MByte)
 // #define MICROPY_HW_SPIFLASH_SIZE_BITS (64 * 1024 * 1024) // W25Q64 - 64 Mbit (8 MByte)
 #define MICROPY_HW_SPIFLASH_SIZE_BITS (128 * 1024 * 1024) // W25Q128 - 128 Mbit (16 MByte)
@@ -175,9 +175,9 @@ extern struct _spi_bdev_t spi_bdev;
 #endif
 
 // SD card detect switch
-//#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_F10)
-//#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
-//#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
+// #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_F10)
+// #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
+// #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 // 1      - PC10 - DAT2/RES
 // 2      - PC11 - CD/DAT3/CS
 // 3      - PD2  - CMD/DI
@@ -195,12 +195,12 @@ extern struct _spi_bdev_t spi_bdev;
 // #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
 
 // Ethernet via RMII
-//#define MICROPY_HW_ETH_MDC          (pin_C1)
-//#define MICROPY_HW_ETH_MDIO         (pin_A2)
-//#define MICROPY_HW_ETH_RMII_REF_CLK (pin_A1)
-//#define MICROPY_HW_ETH_RMII_CRS_DV  (pin_A7)
-//#define MICROPY_HW_ETH_RMII_RXD0    (pin_C4)
-//#define MICROPY_HW_ETH_RMII_RXD1    (pin_C5)
-//#define MICROPY_HW_ETH_RMII_TX_EN   (pin_B11)
-//#define MICROPY_HW_ETH_RMII_TXD0    (pin_B12)
-//#define MICROPY_HW_ETH_RMII_TXD1    (pin_B13)
+// #define MICROPY_HW_ETH_MDC          (pin_C1)
+// #define MICROPY_HW_ETH_MDIO         (pin_A2)
+// #define MICROPY_HW_ETH_RMII_REF_CLK (pin_A1)
+// #define MICROPY_HW_ETH_RMII_CRS_DV  (pin_A7)
+// #define MICROPY_HW_ETH_RMII_RXD0    (pin_C4)
+// #define MICROPY_HW_ETH_RMII_RXD1    (pin_C5)
+// #define MICROPY_HW_ETH_RMII_TX_EN   (pin_B11)
+// #define MICROPY_HW_ETH_RMII_TXD0    (pin_B12)
+// #define MICROPY_HW_ETH_RMII_TXD1    (pin_B13)
