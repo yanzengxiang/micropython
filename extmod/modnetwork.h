@@ -43,6 +43,7 @@
 
 // Common option flags per-socket.
 #define MOD_NETWORK_SO_REUSEADDR    (0x0004)
+#define MOD_NETWORK_SO_BROADCAST    (0x0020)
 #define MOD_NETWORK_SO_KEEPALIVE    (0x0008)
 #define MOD_NETWORK_SO_SNDTIMEO     (0x1005)
 #define MOD_NETWORK_SO_RCVTIMEO     (0x1006)
@@ -52,18 +53,50 @@
 #define MOD_NETWORK_SS_CONNECTED    (2)
 #define MOD_NETWORK_SS_CLOSED       (3)
 
+extern char mod_network_country_code[2];
+
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN
+// Doesn't include the null terminator.
+#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (32)
+#endif
+
+// This is a null-terminated string.
+extern char mod_network_hostname_data[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN + 1];
+
+// To support backwards-compatible (esp32, esp8266, cyw43)
+// `if.config(hostname=...)` to forward directly to the implementation of
+// `network.hostname(...)`.
+mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args);
+
 #if MICROPY_PY_LWIP
+
+#include "lwip/init.h"
+
+#if MICROPY_PY_NETWORK_PPP_LWIP
+extern const struct _mp_obj_type_t mp_network_ppp_lwip_type;
+#endif
+
 struct netif;
 void mod_network_lwip_init(void);
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
-#else
+#if LWIP_VERSION_MAJOR >= 2
+mp_obj_t mod_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+mp_obj_t mod_network_nic_ipconfig(struct netif *netif, size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+extern int mp_mod_network_prefer_dns_use_ip_version;
+#endif
+#elif defined(MICROPY_PORT_NETWORK_INTERFACES)
+
+#if MICROPY_PY_NETWORK_NINAW10
+mp_obj_t network_ninaw10_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+#endif
 
 struct _mod_network_socket_obj_t;
 
 typedef struct _mod_network_nic_protocol_t {
     // API for non-socket operations
     int (*gethostbyname)(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *ip_out);
+    void (*deinit)(void);
 
     // API for socket operations; return -1 on error
     int (*socket)(struct _mod_network_socket_obj_t *socket, int *_errno);
@@ -93,17 +126,19 @@ typedef struct _mod_network_socket_obj_t {
     int32_t timeout;
     mp_obj_t callback;
     int32_t state   : 8;
-    #if MICROPY_PY_USOCKET_EXTENDED_STATE
+    #if MICROPY_PY_SOCKET_EXTENDED_STATE
     // Extended socket state for NICs/ports that need it.
     void *_private;
     #endif
 } mod_network_socket_obj_t;
 
-#endif // MICROPY_PY_LWIP
+#endif // MICROPY_PY_LWIP / MICROPY_PORT_NETWORK_INTERFACES
 
+#ifdef MICROPY_PORT_NETWORK_INTERFACES
 void mod_network_init(void);
 void mod_network_deinit(void);
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
+#endif
 
 #endif // MICROPY_INCLUDED_MODNETWORK_H

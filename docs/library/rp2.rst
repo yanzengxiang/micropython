@@ -23,7 +23,7 @@ The ``rp2`` module includes functions for assembling PIO programs.
 
 For running PIO programs, see :class:`rp2.StateMachine`.
 
-.. function:: asm_pio(*, out_init=None, set_init=None, sideset_init=None, in_shiftdir=0, out_shiftdir=0, autopush=False, autopull=False, push_thresh=32, pull_thresh=32, fifo_join=PIO.JOIN_NONE)
+.. function:: asm_pio(*, out_init=None, set_init=None, sideset_init=None, side_pindir=False, in_shiftdir=PIO.SHIFT_LEFT, out_shiftdir=PIO.SHIFT_LEFT, autopush=False, autopull=False, push_thresh=32, pull_thresh=32, fifo_join=PIO.JOIN_NONE)
 
     Assemble a PIO program.
 
@@ -35,8 +35,10 @@ For running PIO programs, see :class:`rp2.StateMachine`.
     - *out_init* configures the pins used for ``out()`` instructions.
     - *set_init* configures the pins used for ``set()`` instructions. There can
       be at most 5.
-    - *sideset_init* configures the pins used side-setting. There can be at
-      most 5.
+    - *sideset_init* configures the pins used for ``.side()`` modifiers. There
+      can be at most 5.
+    - *side_pindir* when set to ``True`` configures ``.side()`` modifiers to be
+      used for pin directions, instead of pin values (the default, when ``False``).
 
     The following parameters are used by default, but can be overridden in
     `StateMachine.init()`:
@@ -65,6 +67,17 @@ For running PIO programs, see :class:`rp2.StateMachine`.
 
     >>> rp2.asm_pio_encode("set(0, 1)", 0)
     57345
+
+.. function:: bootsel_button()
+
+    Temporarily turns the QSPI_SS pin into an input and reads its value,
+    returning 1 for low and 0 for high.
+    On a typical RP2040 board with a BOOTSEL button, a return value of 1
+    indicates that the button is pressed.
+
+    Since this function temporarily disables access to the external flash
+    memory, it also temporarily disables interrupts and the other core to
+    prevent them from trying to execute code from flash.
 
 .. class:: PIOASMError
 
@@ -230,6 +243,7 @@ Classes
 .. toctree::
     :maxdepth: 1
 
+    rp2.DMA.rst
     rp2.Flash.rst
     rp2.PIO.rst
     rp2.StateMachine.rst

@@ -42,8 +42,11 @@
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
 #include "lwip/apps/mdns.h"
+
+#if MICROPY_PY_NETWORK_CYW43
 #include "extmod/network_cyw43.h"
-#include "drivers/cyw43/cyw43.h"
+#include "lib/cyw43-driver/src/cyw43.h"
+#endif
 
 // Poll lwIP every 128ms
 #define LWIP_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
@@ -61,7 +64,7 @@ u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
-STATIC void pyb_lwip_poll(void) {
+static void pyb_lwip_poll(void) {
     #if MICROPY_PY_NETWORK_WIZNET5K
     // Poll the NIC for incoming data
     wiznet5k_poll();
@@ -69,6 +72,10 @@ STATIC void pyb_lwip_poll(void) {
 
     // Run the lwIP internal updates
     sys_check_timeouts();
+
+    #if LWIP_NETIF_LOOPBACK
+    netif_poll_all();
+    #endif
 }
 
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {

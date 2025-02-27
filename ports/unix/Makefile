@@ -1,13 +1,20 @@
-# Select the variant to build for.
+# Select the variant to build for:
+ifdef VARIANT_DIR
+# Custom variant path - remove trailing slash and get the final component of
+# the path as the variant name.
+VARIANT ?= $(notdir $(VARIANT_DIR:/=))
+else
+# If not given on the command line, then default to standard.
 VARIANT ?= standard
-
-# If the build directory is not given, make it reflect the variant name.
-BUILD ?= build-$(VARIANT)
-
 VARIANT_DIR ?= variants/$(VARIANT)
+endif
+
 ifeq ($(wildcard $(VARIANT_DIR)/.),)
 $(error Invalid VARIANT specified: $(VARIANT_DIR))
 endif
+
+# If the build directory is not given, make it reflect the variant name.
+BUILD ?= build-$(VARIANT)
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
@@ -20,8 +27,8 @@ FROZEN_MANIFEST ?= variants/manifest.py
 PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES = $(VARIANT_DIR)/mpconfigvariant.h
+QSTR_DEFS += qstrdefsport.h
+QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 
 # OS name, for simple autoconfig
 UNAME_S := $(shell uname -s)
@@ -41,6 +48,10 @@ CWARN = -Wall -Werror
 CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
 CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
+# Force the use of 64-bits for file sizes in C library functions on 32-bit platforms.
+# This option has no effect on 64-bit builds.
+CFLAGS += -D_FILE_OFFSET_BITS=64
+
 # Debugging/Optimization
 ifdef DEBUG
 COPT ?= -Og
@@ -52,8 +63,8 @@ endif
 # Remove unused sections.
 COPT += -fdata-sections -ffunction-sections
 
-# Always enable symbols -- They're occasionally useful, and don't make it into the
-# final .bin/.hex/.dfu so the extra size doesn't matter.
+# Note: Symbols and debug information will still be stripped from the final binary
+# unless "DEBUG=1" or "STRIP=" is passed to make, see README.md for details.
 CFLAGS += -g
 
 ifndef DEBUG
@@ -131,7 +142,7 @@ CFLAGS += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS += $(LIBPTHREAD)
 endif
 
-ifeq ($(MICROPY_PY_USSL),1)
+ifeq ($(MICROPY_PY_SSL),1)
 ifeq ($(MICROPY_SSL_AXTLS),1)
 
 endif
@@ -161,7 +172,7 @@ ifeq ($(MICROPY_STANDALONE),1)
 # Build libffi from source.
 GIT_SUBMODULES += lib/libffi
 DEPLIBS += libffi
-LIBFFI_CFLAGS := -I$(shell ls -1d $(BUILD)/lib/libffi/out/lib/libffi-*/include)
+LIBFFI_CFLAGS := -I$(shell ls -1d $(BUILD)/lib/libffi/include)
  ifeq ($(MICROPY_FORCE_32BIT),1)
   LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib32/libffi.a
  else
@@ -193,9 +204,6 @@ SRC_C += \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
-	modmachine.c \
-	modtime.c \
-	moduselect.c \
 	alloc.c \
 	fatfs_port.c \
 	mpbthciport.c \
@@ -204,7 +212,7 @@ SRC_C += \
 	mpbtstackport_usb.c \
 	mpnimbleport.c \
 	modtermios.c \
-	modusocket.c \
+	modsocket.c \
 	modffi.c \
 	modjni.c \
 	$(wildcard $(VARIANT_DIR)/*.c)
@@ -224,17 +232,9 @@ OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
-# Append any auto-generated sources that are needed by sources listed in
-# SRC_QSTR
-SRC_QSTR_AUTO_DEPS +=
 
 ifneq ($(FROZEN_MANIFEST),)
-# To use frozen code create a manifest.py file with a description of files to
-# freeze, then invoke make with FROZEN_MANIFEST=manifest.py (be sure to build from scratch).
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
@@ -294,7 +294,7 @@ $(TOP)/lib/libffi/configure: $(TOP)/lib/libffi/autogen.sh
 # docs and depending on makeinfo
 $(BUILD)/lib/libffi/include/ffi.h: $(TOP)/lib/libffi/configure
 	mkdir -p $(BUILD)/lib/libffi; cd $(BUILD)/lib/libffi; \
-	$(abspath $(TOP))/lib/libffi/configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
+	$(abspath $(TOP))/lib/libffi/configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-shared --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	$(MAKE) install-exec-recursive; $(MAKE) -C include install-data-am
 
 PREFIX = /usr/local

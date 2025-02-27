@@ -1,12 +1,24 @@
 include("$(PORT_DIR)/boards/manifest.py")
 
 # Networking
-require("webrepl")
-require("urequests")
-require("ntptime")
+require("bundle-networking")
 
 # Utils
+require("time")
+require("senml")
 require("logging")
 
 # Bluetooth
-require("aioble", client=True, central=True, l2cap=True, security=True)
+require("aioble")
+
+# Register external library
+add_library("arduino-lib", "$(ARDUINO_LIB_DIR)")
+
+# RPC
+require("msgpackrpc", library="arduino-lib")
+
+# Lora/CMWX1 driver
+require("cmwx1", library="arduino-lib")
+
+# SE05x driver
+require("se05x", library="arduino-lib")

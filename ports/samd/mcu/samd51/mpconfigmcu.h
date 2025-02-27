@@ -1,4 +1,4 @@
-// Deinitions common to all SAMD51 boards
+// Definitions common to all SAMD51 boards
 #include "samd51.h"
 
 #define MICROPY_CONFIG_ROM_LEVEL        (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
@@ -7,32 +7,15 @@
 #define MICROPY_EMIT_THUMB              (1)
 #define MICROPY_EMIT_INLINE_THUMB       (1)
 
-#define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
+// Python internal features
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 
-#ifndef MICROPY_PY_BUILTINS_COMPLEX
-#define MICROPY_PY_BUILTINS_COMPLEX     (0)
-#endif
-
-#ifndef MICROPY_PY_MATH
-#define MICROPY_PY_MATH                 (1)
-#define MP_NEED_LOG2                    (1)
-#endif
-
-#ifndef MICROPY_PY_CMATH
-#define MICROPY_PY_CMATH                (0)
-#endif
-
-#define MICROPY_PY_MACHINE_DHT_READINTO (1)
+#define MICROPY_PY_OS_SYNC              (1)
+#define MICROPY_PY_OS_URANDOM           (1)
 #define MICROPY_PY_ONEWIRE              (1)
-#define MICROPY_PY_UOS_URANDOM          (1)
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (trng_random_u32())
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC (trng_random_u32())
 unsigned long trng_random_u32(void);
-
-#ifndef MICROPY_PY_MACHINE_RTC
-#if MICROPY_HW_XOSC32K
-#define MICROPY_PY_MACHINE_RTC          (1)
-#endif
-#endif
+#define MICROPY_PY_MACHINE_UART_IRQ     (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -44,6 +27,9 @@ unsigned long trng_random_u32(void);
 
 #ifndef MICROPY_HW_UART_TXBUF
 #define MICROPY_HW_UART_TXBUF           (1)
+#endif
+#ifndef MICROPY_HW_UART_RTSCTS
+#define MICROPY_HW_UART_RTSCTS          (1)
 #endif
 
 #define CPU_FREQ                        (120000000)
